@@ -1,4 +1,4 @@
-from exceptions import (
+from teams.exceptions import (
     NegativeTitlesError,
     InvalidYearCupError,
     ImpossibleTitlesError
