@@ -16,15 +16,7 @@ class TeamView(APIView):
 
         try:
             data_processing(team_data)
-        except NegativeTitlesError as error:
-            return Response(
-                {"error": error.message}, 400
-            )
-        except InvalidYearCupError as error:
-            return Response(
-                {"error": error.message}, 400
-            )
-        except ImpossibleTitlesError as error:
+        except (NegativeTitlesError, InvalidYearCupError, ImpossibleTitlesError) as error:
             return Response(
                 {"error": error.message}, 400
             )
@@ -41,3 +33,44 @@ class TeamView(APIView):
             teams_dict.append(t)
 
         return Response(teams_dict, 200)
+
+
+class TeamParamView(APIView):
+    def get(sef, request, team_id):
+        try:
+            team = Team.objects.get(id=team_id)
+        except Team.DoesNotExist:
+            return Response(
+                {"message": "Team not found"}, 404
+            )
+
+        team_dic = model_to_dict(team)
+        return Response(team_dic, 200)
+
+    def patch(sef, request, team_id):
+        try:
+            team = Team.objects.get(id=team_id)
+        except Team.DoesNotExist:
+            return Response(
+                {"message": "Team not found"}, 404
+            )
+
+        for key, value in request.data.items():
+            setattr(team, key, value)
+
+        team.save()
+        team_dict = model_to_dict(team)
+
+        return Response(team_dict, 200)
+
+    def delete(sef, request, team_id):
+        try:
+            team = Team.objects.get(id=team_id)
+        except Team.DoesNotExist:
+            return Response(
+                {"message": "Team not found"}, 404
+            )
+
+        team.delete()
+
+        return Response(status=204)
